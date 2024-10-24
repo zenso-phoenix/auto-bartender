@@ -2,6 +2,59 @@
 import RPi.GPIO as GPIO  # Required for controlling GPIO pins
 import time  # Required to manage delays and wait times
 from flask import Flask, request, jsonify
+import os
+import openai
+
+""" OPENAI SETUP """
+# Set up OpenAI API key
+
+"""
+Bash: echo 'export OPENAI_API_KEY="your-openai-api-key"' >> ~/.bashrc
+Note: it may be ~/.bash_profile on some systems
+Bash: source ~/.bashrc
+"""
+openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_key = ""
+
+# Define available drinks for ChatGPT to choose from
+drinks = [
+    "Sex on the Beach",
+    "Gin and Tonic",
+    "Tom Collins",
+    "Gin Sunrise",
+    "Negroni",
+    "Margarita",
+    "Rum Punch or Mai Tai",
+    "Daiquiri",
+    "Mojito",
+    "Vodka Cranberry or Cape Codder",
+    "Sea Breeze",
+    "Vodka Tonic",
+    "Screwdriver",
+    "Cosmopolitan or Cosmo",
+    "Lemon Drop",
+    "Tequila Sunrise",
+    "Shirley Temple",
+    "Squirtini"
+]
+
+# Drink recommendation function based on mood parameter
+def get_drink_recommendation(mood):
+    try:
+        prompt = (
+            f"The user is feeling {mood}. Based on their mood, suggest a drink from this list: "
+            f"{', '.join(drinks)}. Provide the name of the one drink that best suits their mood."
+        )
+        response = openai.Completion.create(
+            engine="gpt-3.5-turbo-instruct",
+            prompt=prompt,
+            max_tokens=20
+        )
+        suggested_drink = response.choices[0].text.strip()
+        return suggested_drink
+    except Exception as e:
+        print(f"Error during OpenAI request: {e}")
+        return "Margarita"
 
 """ GPIO SETUP """
 # Setup GPIO mode and warnings
@@ -44,7 +97,15 @@ def alexa_handler():
         elif request_type == "IntentRequest":
             intent_name = alexa_request['request']['intent']['name']
             
-            if intent_name == "SexOnTheBeachIntent":
+            # Mood intents
+            if intent_name == "ProvideMoodIntent":
+                user_mood = alexa_request['request']['intent']['slots']['mood']['value']
+                return handle_mood_input(user_mood)
+            elif intent_name == "UnsureIntent":
+                return ask_for_mood_response()
+            
+            # Drink intents
+            elif intent_name == "SexOnTheBeachIntent":
                 return make_sex_on_the_beach_response()
             elif intent_name == "GinAndTonicIntent":
                 return make_gin_and_tonic_response()
@@ -102,7 +163,7 @@ def launch_response():
         "response": {
             "outputSpeech": {
                 "type": "PlainText",
-                "text": "Squirtle. What would you like to drink?"
+                "text": "What would you like to drink?"
                 },
                 "shouldEndSession": False
             }
@@ -136,6 +197,46 @@ def dispense(liquid_name, seconds):
 
 # Shot variable
 shot = 2.2 # 1.5 oz. every 2.2 sec according to math
+
+# Mood response function
+def handle_mood_input(mood):
+    recommended_drink = get_drink_recommendation(mood)
+    
+    if recommended_drink in drinks:
+        return jsonify({
+            "version": "1.0",
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": f"Based on how you're feeling, I think you'll enjoy a {recommended_drink}. I'll start making it now."
+                },
+                "shouldEndSession": True
+            }
+        })
+    else:
+        return jsonify({
+            "version": "1.0",
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "I'm not sure what to make based on that mood, but how about a Margarita instead?"
+                },
+                "shouldEndSession": True
+            }
+        })
+
+# Ask for mood if user says "idk"
+def ask_for_mood_response():
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "No problem! How are you feeling today? Your mood can help me recommend the perfect drink."
+            },
+            "shouldEndSession": False
+        }
+    })
 
 """ DRINKS """
 # Sex on the Beach
