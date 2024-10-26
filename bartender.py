@@ -194,30 +194,63 @@ shot = 2.2 # 1.5 oz. every 2.2 sec according to math
 # Mood response function
 def handle_mood_input(mood):
     recommended_drink = get_drink_recommendation(mood)
-    
+
     if recommended_drink in drinks:
         # Trigger the drink-making function based on the recommendation
         if recommended_drink == "Margarita":
-            make_margarita_response()
+            make_margarita()
         elif recommended_drink == "Sex on the Beach":
-            make_sex_on_the_beach_response()
+            make_sex_on_the_beach()
         elif recommended_drink == "Gin and Tonic":
-            make_gin_and_tonic_response()
-        # Add other drink cases as needed...
-        
+            make_gin_and_tonic()
+        elif recommended_drink == "Tom Collins":
+            make_tom_collins()
+        elif recommended_drink == "Gin Sunrise":
+            make_gin_sunrise()
+        elif recommended_drink == "Negroni":
+            make_negroni()
+        elif recommended_drink == "Rum Punch or Mai Tai":
+            make_rum_punch()
+        elif recommended_drink == "Daiquiri":
+            make_daiquiri()
+        elif recommended_drink == "Mojito":
+            make_mojito()
+        elif recommended_drink == "Vodka Cranberry or Cape Codder":
+            make_vodka_cranberry()
+        elif recommended_drink == "Sea Breeze":
+            make_sea_breeze()
+        elif recommended_drink == "Vodka Tonic":
+            make_vodka_tonic()
+        elif recommended_drink == "Screwdriver":
+            make_screwdriver()
+        elif recommended_drink == "Cosmopolitan or Cosmo":
+            make_cosmo()
+        elif recommended_drink == "Lemon Drop":
+            make_lemon_drop()
+        elif recommended_drink == "Tequila Sunrise":
+            make_tequila_sunrise()
+        elif recommended_drink == "Shirley Temple":
+            make_shirley_temple()
+        elif recommended_drink == "Squirtini":
+            make_squirtini()
+        else:
+            # Fallback if drink not found
+            make_margarita()
+            recommended_drink = "Margarita"
+
         return jsonify({
             "version": "1.0",
             "response": {
                 "outputSpeech": {
                     "type": "PlainText",
-                    "text": f"Based on how you're feeling, I think you'll enjoy a {recommended_drink}. I'll start making it now."
+                    "text": f"Based on how you're feeling, I'll make a {recommended_drink}."
                 },
                 "shouldEndSession": True
             }
         })
     else:
         # Fallback if no drink is found
-        make_margarita_response()
+        make_margarita()
         return jsonify({
             "version": "1.0",
             "response": {
@@ -243,202 +276,242 @@ def ask_for_mood_response():
     })
 
 """ DRINKS """
-# Sex on the Beach
-@app.route('/make_sex_on_the_beach', methods=['POST'])
-def make_sex_on_the_beach_response():
+# Non-route functions to make drinks
+
+def make_sex_on_the_beach():
     try:
         dispense("vodka", 3)
         dispense("rum", 3)
         dispense("gin", 3)
         dispense("oj", 10)
         dispense("cran", 5)
-        return jsonify({"status": "Sex on the Beach is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Return 500 error if something goes wrong
+        print(f"Error making Sex on the Beach: {e}")
 
-# Gin and Tonic
-@app.route('/make_gin_and_tonic', methods=['POST'])
-def make_gin_and_tonic_response():
+def make_gin_and_tonic():
     try:
         dispense("gin", shot)
         dispense("tonic", 6)
-        return jsonify({"status": "Gin and tonic is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Return 500 error if something goes wrong
-    
-# Tom Collins
-@app.route('/make_tom_collins', methods=['POST'])
-def make_tom_collins_response():
+        print(f"Error making Gin and Tonic: {e}")
+
+def make_tom_collins():
     try:
         dispense("gin", shot)
         dispense("lemonime", 5)
         dispense("tonic", 4)
-        return jsonify({"status": "Tom Collins is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Tom Collins: {e}")
 
-# Gin Sunrise
-@app.route('/make_gin_sunrise', methods=['POST'])
-def make_gin_sunrise_response():
+def make_gin_sunrise():
     try:
         dispense("gin", shot)
         dispense("oj", 6)
         dispense("grenadine", 2)
-        return jsonify({"status": "Gin Sunrise is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Gin Sunrise: {e}")
 
-# Negroni
-@app.route('/make_negroni', methods=['POST'])
-def make_negroni_response():
+def make_negroni():
     try:
         dispense("gin", shot)
         dispense("rum", shot)
         dispense("tonic", 3)
-        return jsonify({"status": "Negroni is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Negroni: {e}")
 
-# Margarita
-@app.route('/make_margarita', methods=['POST'])
-def make_margarita_response():
+def make_margarita():
     try:
         dispense("rum", shot)
         dispense("lemonime", 5)
         dispense("tonic", 2)
         dispense("oj", 2)
-        return jsonify({"status": "Margarita is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Return 500 error if something goes wrong
+        print(f"Error making Margarita: {e}")
 
-# Rum Punch or Mai Tai
-@app.route('/make_rum_punch', methods=['POST'])
-def make_rum_punch_response():
+def make_rum_punch():
     try:
         dispense("rum", 3)
         dispense("oj", 5)
         dispense("cran", 3)
         dispense("grenadine", 2)
-        return jsonify({"status": "Rum Punch is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Rum Punch: {e}")
 
-# Daiquiri (better w sprite)
-@app.route('/make_daiquiri', methods=['POST'])
-def make_daiquiri_response():
+def make_daiquiri():
     try:
         dispense("rum", shot)
         dispense("lemonime", 5)
         dispense("tonic", 2)  # A splash of tonic to mimic club soda
-        return jsonify({"status": "Daiquiri is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Daiquiri: {e}")
 
-# Mojito (add mint)
-@app.route('/make_mojito', methods=['POST'])
-def make_mojito_response():
+def make_mojito():
     try:
         dispense("rum", shot)
         dispense("lemonime", 5)
         dispense("tonic", 5)  # Tonic acts as a fizzy element like soda water
-        return jsonify({"status": "Mojito is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Mojito: {e}")
 
-# Vodka Cranberry or Cape Codder
-@app.route('/make_vodka_cranberry', methods=['POST'])
-def make_vodka_cranberry_response():
+def make_vodka_cranberry():
     try:
         dispense("vodka", shot)
         dispense("cran", 5)
-        return jsonify({"status": "Vodka cranberry is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Return 500 error if something goes wrong
+        print(f"Error making Vodka Cranberry: {e}")
 
-# Sea Breeze
-@app.route('/make_sea_breeze', methods=['POST'])
-def make_sea_breeze_response():
+def make_sea_breeze():
     try:
         dispense("vodka", shot)
         dispense("cran", 4)
         dispense("oj", 4)
-        return jsonify({"status": "Sea Breeze is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Sea Breeze: {e}")
 
-# Vodka Tonic
-@app.route('/make_vodka_tonic', methods=['POST'])
-def make_vodka_tonic_response():
+def make_vodka_tonic():
     try:
         dispense("vodka", shot)
         dispense("tonic", 6)
-        return jsonify({"status": "Vodka Tonic is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Vodka Tonic: {e}")
 
-# Screwdriver
-@app.route('/make_screwdriver', methods=['POST'])
-def make_screwdriver_response():
+def make_screwdriver():
     try:
         dispense("vodka", shot)
         dispense("oj", 6)
-        return jsonify({"status": "Screwdriver is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Screwdriver: {e}")
 
-# Cosmopolitan or Cosmo
-@app.route('/make_cosmo', methods=['POST'])
-def make_cosmo_response():
+def make_cosmo():
     try:
         dispense("vodka", shot)
         dispense("cran", 4)
         dispense("lemonime", 3)
         dispense("grenadine", 1)  # Adds sweetness and a touch of color
-        return jsonify({"status": "Cosmopolitan is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Cosmopolitan: {e}")
 
-# Lemon Drop
-@app.route('/make_lemon_drop', methods=['POST'])
-def make_lemon_drop_response():
+def make_lemon_drop():
     try:
         dispense("vodka", shot)
         dispense("lemonime", 5)
         dispense("tonic", 2)  # Adds a bit of fizz, similar to soda water
-        return jsonify({"status": "Lemon Drop is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Lemon Drop: {e}")
 
-# Tequila Sunrise (with rum substitute)
-@app.route('/make_tequila_sunrise', methods=['POST'])
-def make_tequila_sunrise_response():
+def make_tequila_sunrise():
     try:
         dispense("rum", shot)
         dispense("oj", 6)
         dispense("grenadine", 2)
-        return jsonify({"status": "Tequila Sunrise is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Tequila Sunrise: {e}")
 
-# Shirley Temple
-@app.route('/make_shirley_temple', methods=['POST'])
-def make_shirley_temple_response():
+def make_shirley_temple():
     try:
         dispense("tonic", 6)
         dispense("grenadine", 2)
-        return jsonify({"status": "Shirley Temple is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Shirley Temple: {e}")
 
-# Squirtini (everything)
-@app.route('/make_squirtini', methods=['POST'])
-def make_squirtini_response():
+def make_squirtini():
     try:
         for liquid in liquids.keys():
             dispense(liquid, 1)  # Dispense each for 1 second
-        return jsonify({"status": "Squirtini is ready!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error making Squirtini: {e}")
+
+# Flask route handlers for drinks
+
+@app.route('/make_sex_on_the_beach', methods=['POST'])
+def make_sex_on_the_beach_response():
+    make_sex_on_the_beach()
+    return jsonify({"status": "Sex on the Beach is ready!"})
+
+@app.route('/make_gin_and_tonic', methods=['POST'])
+def make_gin_and_tonic_response():
+    make_gin_and_tonic()
+    return jsonify({"status": "Gin and Tonic is ready!"})
+
+@app.route('/make_tom_collins', methods=['POST'])
+def make_tom_collins_response():
+    make_tom_collins()
+    return jsonify({"status": "Tom Collins is ready!"})
+
+@app.route('/make_gin_sunrise', methods=['POST'])
+def make_gin_sunrise_response():
+    make_gin_sunrise()
+    return jsonify({"status": "Gin Sunrise is ready!"})
+
+@app.route('/make_negroni', methods=['POST'])
+def make_negroni_response():
+    make_negroni()
+    return jsonify({"status": "Negroni is ready!"})
+
+@app.route('/make_margarita', methods=['POST'])
+def make_margarita_response():
+    make_margarita()
+    return jsonify({"status": "Margarita is ready!"})
+
+@app.route('/make_rum_punch', methods=['POST'])
+def make_rum_punch_response():
+    make_rum_punch()
+    return jsonify({"status": "Rum Punch is ready!"})
+
+@app.route('/make_daiquiri', methods=['POST'])
+def make_daiquiri_response():
+    make_daiquiri()
+    return jsonify({"status": "Daiquiri is ready!"})
+
+@app.route('/make_mojito', methods=['POST'])
+def make_mojito_response():
+    make_mojito()
+    return jsonify({"status": "Mojito is ready!"})
+
+@app.route('/make_vodka_cranberry', methods=['POST'])
+def make_vodka_cranberry_response():
+    make_vodka_cranberry()
+    return jsonify({"status": "Vodka Cranberry is ready!"})
+
+@app.route('/make_sea_breeze', methods=['POST'])
+def make_sea_breeze_response():
+    make_sea_breeze()
+    return jsonify({"status": "Sea Breeze is ready!"})
+
+@app.route('/make_vodka_tonic', methods=['POST'])
+def make_vodka_tonic_response():
+    make_vodka_tonic()
+    return jsonify({"status": "Vodka Tonic is ready!"})
+
+@app.route('/make_screwdriver', methods=['POST'])
+def make_screwdriver_response():
+    make_screwdriver()
+    return jsonify({"status": "Screwdriver is ready!"})
+
+@app.route('/make_cosmo', methods=['POST'])
+def make_cosmo_response():
+    make_cosmo()
+    return jsonify({"status": "Cosmopolitan is ready!"})
+
+@app.route('/make_lemon_drop', methods=['POST'])
+def make_lemon_drop_response():
+    make_lemon_drop()
+    return jsonify({"status": "Lemon Drop is ready!"})
+
+@app.route('/make_tequila_sunrise', methods=['POST'])
+def make_tequila_sunrise_response():
+    make_tequila_sunrise()
+    return jsonify({"status": "Tequila Sunrise is ready!"})
+
+@app.route('/make_shirley_temple', methods=['POST'])
+def make_shirley_temple_response():
+    make_shirley_temple()
+    return jsonify({"status": "Shirley Temple is ready!"})
+
+@app.route('/make_squirtini', methods=['POST'])
+def make_squirtini_response():
+    make_squirtini()
+    return jsonify({"status": "Squirtini is ready!"})
 
 """ START FLASK """
 # Start the Flask server
