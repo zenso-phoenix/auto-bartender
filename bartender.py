@@ -15,8 +15,27 @@ Bash: source ~/.bashrc
 """
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Filter `drink_handlers` to extract only drink names (exclude "Intent" entries)
-drinks = [name for name in drink_handlers.keys() if "Intent" not in name]
+# List of drinks available for recommendation
+drinks = [
+    "Margarita",
+    "Sex on the Beach",
+    "Gin and Tonic",
+    "Tom Collins",
+    "Gin Sunrise",
+    "Negroni",
+    "Rum Punch or Mai Tai",
+    "Daiquiri",
+    "Mojito",
+    "Vodka Cranberry or Cape Codder",
+    "Sea Breeze",
+    "Vodka Tonic",
+    "Screwdriver",
+    "Cosmopolitan or Cosmo",
+    "Lemon Drop",
+    "Tequila Sunrise",
+    "Shirley Temple",
+    "Squirtini"
+]
 
 # Drink recommendation function based on mood parameter
 def get_drink_recommendation(mood):
