@@ -15,30 +15,6 @@ Bash: source ~/.bashrc
 """
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Unified dictionary mapping drink names and intents to their corresponding functions
-drink_handlers = {
-    "Margarita": make_margarita_response,
-    "Sex on the Beach": make_sex_on_the_beach_response,
-    "Gin and Tonic": make_gin_and_tonic_response,
-    "Tom Collins": make_tom_collins_response,
-    "Gin Sunrise": make_gin_sunrise_response,
-    "Negroni": make_negroni_response,
-    "Rum Punch or Mai Tai": make_rum_punch_response,
-    "Daiquiri": make_daiquiri_response,
-    "Mojito": make_mojito_response,
-    "Vodka Cranberry or Cape Codder": make_vodka_cranberry_response,
-    "Sea Breeze": make_sea_breeze_response,
-    "Vodka Tonic": make_vodka_tonic_response,
-    "Screwdriver": make_screwdriver_response,
-    "Cosmopolitan or Cosmo": make_cosmo_response,
-    "Lemon Drop": make_lemon_drop_response,
-    "Tequila Sunrise": make_tequila_sunrise_response,
-    "Shirley Temple": make_shirley_temple_response,
-    "Squirtini": make_squirtini_response,
-    # Additional mappings for Alexa intents directly
-    "ProvideMoodIntent": handle_mood_input,
-    "UnsureIntent": ask_for_mood_response
-}
 # Filter `drink_handlers` to extract only drink names (exclude "Intent" entries)
 drinks = [name for name in drink_handlers.keys() if "Intent" not in name]
 
@@ -408,6 +384,32 @@ def make_squirtini_response():
         return jsonify({"status": "Squirtini is ready!"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# Unified dictionary mapping drink names and intents to their corresponding functions
+drink_handlers = {
+    "Margarita": make_margarita_response,
+    "Sex on the Beach": make_sex_on_the_beach_response,
+    "Gin and Tonic": make_gin_and_tonic_response,
+    "Tom Collins": make_tom_collins_response,
+    "Gin Sunrise": make_gin_sunrise_response,
+    "Negroni": make_negroni_response,
+    "Rum Punch or Mai Tai": make_rum_punch_response,
+    "Daiquiri": make_daiquiri_response,
+    "Mojito": make_mojito_response,
+    "Vodka Cranberry or Cape Codder": make_vodka_cranberry_response,
+    "Sea Breeze": make_sea_breeze_response,
+    "Vodka Tonic": make_vodka_tonic_response,
+    "Screwdriver": make_screwdriver_response,
+    "Cosmopolitan or Cosmo": make_cosmo_response,
+    "Lemon Drop": make_lemon_drop_response,
+    "Tequila Sunrise": make_tequila_sunrise_response,
+    "Shirley Temple": make_shirley_temple_response,
+    "Squirtini": make_squirtini_response,
+    # Additional mappings for Alexa intents directly
+    "ProvideMoodIntent": handle_mood_input,
+    "UnsureIntent": ask_for_mood_response
+}
+
 
 """ START FLASK """
 # Start the Flask server
