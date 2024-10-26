@@ -42,8 +42,8 @@ drinks = [
 def get_drink_recommendation(mood):
     try:
         prompt = (
-            f"The user is feeling {mood}. Based on their mood, suggest a drink from this list: "
-            f"{', '.join(drinks)}. Provide the name of the one drink that best suits their mood."
+            f"The user is feeling {mood}. Based on their mood, suggest one drink from this list: "
+            f"{', '.join(drinks)}. Provide the name of the one drink that best suits their mood in the following format:\n[drink]"
         )
         response = openai.Completion.create(
             engine="gpt-3.5-turbo-instruct",
@@ -175,7 +175,7 @@ def unknown_drink_response():
         "response": {
             "outputSpeech": {
                 "type": "PlainText",
-                "text": "Squirtle. Squirtiddy, squirt, squirt!"
+                "text": "Unknown drink."
                 },
                 "shouldEndSession": True
             }
@@ -203,6 +203,15 @@ def handle_mood_input(mood):
     recommended_drink = get_drink_recommendation(mood)
     
     if recommended_drink in drinks:
+        # Trigger the drink-making function based on the recommendation
+        if recommended_drink == "Margarita":
+            make_margarita_response()
+        elif recommended_drink == "Sex on the Beach":
+            make_sex_on_the_beach_response()
+        elif recommended_drink == "Gin and Tonic":
+            make_gin_and_tonic_response()
+        # Add other drink cases as needed...
+        
         return jsonify({
             "version": "1.0",
             "response": {
@@ -214,6 +223,8 @@ def handle_mood_input(mood):
             }
         })
     else:
+        # Fallback if no drink is found
+        make_margarita_response()
         return jsonify({
             "version": "1.0",
             "response": {
