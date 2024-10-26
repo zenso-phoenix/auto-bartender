@@ -7,22 +7,16 @@ import openai
 
 """ OPENAI SETUP """
 # Set up OpenAI API key
-
-"""
-Bash: echo 'export OPENAI_API_KEY="your-openai-api-key"' >> ~/.bashrc
-Note: it may be ~/.bash_profile on some systems
-Bash: source ~/.bashrc
-"""
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# List of drinks available for recommendation
+# Define available drinks for ChatGPT to choose from
 drinks = [
-    "Margarita",
     "Sex on the Beach",
     "Gin and Tonic",
     "Tom Collins",
     "Gin Sunrise",
     "Negroni",
+    "Margarita",
     "Rum Punch or Mai Tai",
     "Daiquiri",
     "Mojito",
@@ -47,8 +41,7 @@ def get_drink_recommendation(mood):
         response = openai.Completion.create(
             engine="gpt-3.5-turbo-instruct",
             prompt=prompt,
-            max_tokens=30,
-            temperature=0.7
+            max_tokens=20
         )
         suggested_drink = response.choices[0].text.strip()
         return suggested_drink
@@ -97,17 +90,52 @@ def alexa_handler():
         elif request_type == "IntentRequest":
             intent_name = alexa_request['request']['intent']['name']
             
-            # Check if the intent name exists in the unified dictionary
-            if intent_name in drink_handlers:
-                # Handle mood-based intent separately to pass the mood parameter
-                if intent_name == "ProvideMoodIntent":
-                    user_mood = alexa_request['request']['intent']['slots']['mood']['value']
-                    return drink_handlers[intent_name](user_mood)  # Pass mood to handle_mood_input
-                else:
-                    return drink_handlers[intent_name]()  # Call function directly for drink intents
+            # Mood intents
+            if intent_name == "ProvideMoodIntent":
+                user_mood = alexa_request['request']['intent']['slots']['mood']['value']
+                return handle_mood_input(user_mood)
+            elif intent_name == "UnsureIntent":
+                return ask_for_mood_response()
             
-            # Unknown intent fallback
-            return unknown_drink_response()
+            # Drink intents
+            elif intent_name == "SexOnTheBeachIntent":
+                return make_sex_on_the_beach_response()
+            elif intent_name == "GinAndTonicIntent":
+                return make_gin_and_tonic_response()
+            elif intent_name == "TomCollinsIntent":
+                return make_tom_collins_response()
+            elif intent_name == "GinSunriseIntent":
+                return make_gin_sunrise_response()
+            elif intent_name == "NegroniIntent":
+                return make_negroni_response()
+            elif intent_name == "MargaritaIntent":
+                return make_margarita_response()
+            elif intent_name == "RumPunchIntent": # Rum Punch and Mai Tai utterances
+                return make_rum_punch_response()
+            elif intent_name == "DaquiriIntent":
+                return make_daiquiri_response()
+            elif intent_name == "MojitoIntent":
+                return make_mojito_response()
+            elif intent_name == "VodkaCranberryIntent": # Vodka Cranberry and Cape Codder utterances
+                return make_vodka_cranberry_response()
+            elif intent_name == "SeaBreezeIntent":
+                return make_sea_breeze_response()
+            elif intent_name == "VodkaTonicIntent":
+                return make_vodka_tonic_response()
+            elif intent_name == "ScrewdriverIntent":
+                return make_screwdriver_response()
+            elif intent_name == "CosmopolitanIntent": # Cosmopolitan and Cosmo utterances
+                return make_cosmo_response()
+            elif intent_name == "LemonDropIntent":
+                return make_lemon_drop_response()
+            elif intent_name == "TequilaSunriseIntent":
+                return make_tequila_sunrise_response()
+            elif intent_name == "ShirleyTempleIntent":
+                return make_shirley_temple_response()
+            elif intent_name == "SquirtiniIntent":
+                return make_squirtini_response()
+            else:
+                return unknown_drink_response()
             
     except Exception as e:
         print(f"Error: {e}")
@@ -140,7 +168,7 @@ def unknown_drink_response():
         "response": {
             "outputSpeech": {
                 "type": "PlainText",
-                "text": "Squirtle. Squirtiddy, squirt, squirt!"
+                "text": "Unknown drink."
                 },
                 "shouldEndSession": True
             }
@@ -167,21 +195,29 @@ shot = 2.2 # 1.5 oz. every 2.2 sec according to math
 def handle_mood_input(mood):
     recommended_drink = get_drink_recommendation(mood)
     
-    if recommended_drink in drink_handlers:
-        # Call the function associated with the recommended drink
-        drink_handlers[recommended_drink]()  # Calls the function
+    if recommended_drink in drinks:
+        # Trigger the drink-making function based on the recommendation
+        if recommended_drink == "Margarita":
+            make_margarita_response()
+        elif recommended_drink == "Sex on the Beach":
+            make_sex_on_the_beach_response()
+        elif recommended_drink == "Gin and Tonic":
+            make_gin_and_tonic_response()
+        # Add other drink cases as needed...
+        
         return jsonify({
             "version": "1.0",
             "response": {
                 "outputSpeech": {
                     "type": "PlainText",
-                    "text": f"Based on how you're feeling, I'll make you {recommended_drink}."
+                    "text": f"Based on how you're feeling, I think you'll enjoy a {recommended_drink}. I'll start making it now."
                 },
                 "shouldEndSession": True
             }
         })
     else:
-        # Fallback if no valid drink is found
+        # Fallback if no drink is found
+        make_margarita_response()
         return jsonify({
             "version": "1.0",
             "response": {
@@ -200,7 +236,7 @@ def ask_for_mood_response():
         "response": {
             "outputSpeech": {
                 "type": "PlainText",
-                "text": "No problem! How are you feeling today?"
+                "text": "No problem! How are you feeling today? Your mood can help me recommend the perfect drink."
             },
             "shouldEndSession": False
         }
@@ -403,32 +439,6 @@ def make_squirtini_response():
         return jsonify({"status": "Squirtini is ready!"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# Unified dictionary mapping drink names and intents to their corresponding functions
-drink_handlers = {
-    "Margarita": make_margarita_response,
-    "Sex on the Beach": make_sex_on_the_beach_response,
-    "Gin and Tonic": make_gin_and_tonic_response,
-    "Tom Collins": make_tom_collins_response,
-    "Gin Sunrise": make_gin_sunrise_response,
-    "Negroni": make_negroni_response,
-    "Rum Punch or Mai Tai": make_rum_punch_response,
-    "Daiquiri": make_daiquiri_response,
-    "Mojito": make_mojito_response,
-    "Vodka Cranberry or Cape Codder": make_vodka_cranberry_response,
-    "Sea Breeze": make_sea_breeze_response,
-    "Vodka Tonic": make_vodka_tonic_response,
-    "Screwdriver": make_screwdriver_response,
-    "Cosmopolitan or Cosmo": make_cosmo_response,
-    "Lemon Drop": make_lemon_drop_response,
-    "Tequila Sunrise": make_tequila_sunrise_response,
-    "Shirley Temple": make_shirley_temple_response,
-    "Squirtini": make_squirtini_response,
-    # Additional mappings for Alexa intents directly
-    "ProvideMoodIntent": handle_mood_input,
-    "UnsureIntent": ask_for_mood_response
-}
-
 
 """ START FLASK """
 # Start the Flask server
