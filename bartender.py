@@ -9,7 +9,7 @@ import openai
 # Set up OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Define available drinks for ChatGPT to choose from
+# List of all drinks for GPT
 drinks = [
     "Sex on the Beach",
     "Gin and Tonic",
@@ -17,26 +17,26 @@ drinks = [
     "Gin Sunrise",
     "Negroni",
     "Margarita",
-    "Rum Punch or Mai Tai",
+    "Rum Punch",
     "Daiquiri",
     "Mojito",
-    "Vodka Cranberry or Cape Codder",
+    "Vodka Cranberry",
     "Sea Breeze",
     "Vodka Tonic",
     "Screwdriver",
-    "Cosmopolitan or Cosmo",
+    "Cosmopolitan",
     "Lemon Drop",
     "Tequila Sunrise",
     "Shirley Temple",
     "Squirtini"
 ]
 
-# Drink recommendation function based on mood parameter
+# Inputs mood and (GPT) returns drink recommendation
 def get_drink_recommendation(mood):
     try:
         prompt = (
             f"The user is feeling {mood}. Based on their mood, suggest one drink from this list: "
-            f"{', '.join(drinks)}. Provide the name of the one drink that best suits their mood in the following format:\n[drink]"
+            f"{', '.join(drinks)}. Provide the name of the one drink that best suits their mood in the following format:\ndrink name"
         )
         response = openai.Completion.create(
             engine="gpt-3.5-turbo-instruct",
@@ -77,7 +77,7 @@ print("GPIO setup complete.")
 # Flask app to listen for Alexa requests
 app = Flask(__name__)
 
-# Test code for Alexa
+# Alexa routing
 @app.route('/', methods=['POST'])
 def alexa_handler():
     try:
@@ -175,6 +175,9 @@ def unknown_drink_response():
         })
 
 """ BASIC FUNCTIONS + VARIABLES """
+# Shot variable
+shot = 2.2 # 1.5 oz. every 2.2 sec according to math
+
 # Function to dispense liquids
 def dispense(liquid_name, seconds):
     if liquid_name in liquids:
@@ -188,10 +191,21 @@ def dispense(liquid_name, seconds):
     else:
         print(f"Error: {liquid_name} not found.")
 
-# Shot variable
-shot = 2.2 # 1.5 oz. every 2.2 sec according to math
+""" MOOD FUNCTIONS """
+# Alexa calls: if user says "idk", system asks for mood
+def ask_for_mood_response():
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "How are you feeling today then? I'll make the perfect drink for your mood."
+            },
+            "shouldEndSession": False
+        }
+    })
 
-# Mood response function
+# Inputs mood -> recommended drink --> runs make drink function
 def handle_mood_input(mood):
     recommended_drink = get_drink_recommendation(mood)
 
@@ -234,10 +248,9 @@ def handle_mood_input(mood):
         elif recommended_drink == "Squirtini":
             make_squirtini()
         else:
-            # Fallback if drink not found
+            # Fallback if drink not found, but technically it always should be
             make_margarita()
             recommended_drink = "Margarita"
-
         return jsonify({
             "version": "1.0",
             "response": {
@@ -262,21 +275,53 @@ def handle_mood_input(mood):
             }
         })
 
-# Ask for mood if user says "idk"
-def ask_for_mood_response():
-    return jsonify({
-        "version": "1.0",
-        "response": {
-            "outputSpeech": {
-                "type": "PlainText",
-                "text": "No problem! How are you feeling today? Your mood can help me recommend the perfect drink."
-            },
-            "shouldEndSession": False
-        }
-    })
+""" MARGARITA """"
+# Flask route handler
+@app.route('/make_margarita', methods=['POST'])
+def make_margarita_route():
+    make_margarita()
+    return jsonify({"status": "Margarita is ready!"})
 
-""" DRINKS """
-# Non-route functions to make drinks
+# Alexa intent function
+def make_margarita_response():
+    try:
+        make_margarita()
+        return jsonify({
+            "version": "1.0",
+            "sessionAttributes": {},
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "Your Margarita is ready!"
+                },
+                "shouldEndSession": True
+            }
+        })
+    except Exception as e:
+        print(f"Error in making Margarita: {e}")
+        return jsonify({
+            "version": "1.0",
+            "sessionAttributes": {},
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "Sorry, I couldn't make a Margarita."
+                },
+                "shouldEndSession": True
+            }
+        })
+
+# Shared Margarita making function
+def make_margarita():
+    try:
+        dispense("rum", shot)
+        dispense("lemonime", 5)
+        dispense("tonic", 2)
+        dispense("oj", 2)
+    except Exception as e:
+        print(f"Error making Margarita: {e}")
+
+""" Un-updated drink functions
 
 def make_sex_on_the_beach():
     try:
@@ -318,15 +363,6 @@ def make_negroni():
         dispense("tonic", 3)
     except Exception as e:
         print(f"Error making Negroni: {e}")
-
-def make_margarita():
-    try:
-        dispense("rum", shot)
-        dispense("lemonime", 5)
-        dispense("tonic", 2)
-        dispense("oj", 2)
-    except Exception as e:
-        print(f"Error making Margarita: {e}")
 
 def make_rum_punch():
     try:
@@ -420,98 +456,7 @@ def make_squirtini():
             dispense(liquid, 1)  # Dispense each for 1 second
     except Exception as e:
         print(f"Error making Squirtini: {e}")
-
-# Flask route handlers for drinks
-
-@app.route('/make_sex_on_the_beach', methods=['POST'])
-def make_sex_on_the_beach_response():
-    make_sex_on_the_beach()
-    return jsonify({"status": "Sex on the Beach is ready!"})
-
-@app.route('/make_gin_and_tonic', methods=['POST'])
-def make_gin_and_tonic_response():
-    make_gin_and_tonic()
-    return jsonify({"status": "Gin and Tonic is ready!"})
-
-@app.route('/make_tom_collins', methods=['POST'])
-def make_tom_collins_response():
-    make_tom_collins()
-    return jsonify({"status": "Tom Collins is ready!"})
-
-@app.route('/make_gin_sunrise', methods=['POST'])
-def make_gin_sunrise_response():
-    make_gin_sunrise()
-    return jsonify({"status": "Gin Sunrise is ready!"})
-
-@app.route('/make_negroni', methods=['POST'])
-def make_negroni_response():
-    make_negroni()
-    return jsonify({"status": "Negroni is ready!"})
-
-@app.route('/make_margarita', methods=['POST'])
-def make_margarita_response():
-    make_margarita()
-    return jsonify({"status": "Margarita is ready!"})
-
-@app.route('/make_rum_punch', methods=['POST'])
-def make_rum_punch_response():
-    make_rum_punch()
-    return jsonify({"status": "Rum Punch is ready!"})
-
-@app.route('/make_daiquiri', methods=['POST'])
-def make_daiquiri_response():
-    make_daiquiri()
-    return jsonify({"status": "Daiquiri is ready!"})
-
-@app.route('/make_mojito', methods=['POST'])
-def make_mojito_response():
-    make_mojito()
-    return jsonify({"status": "Mojito is ready!"})
-
-@app.route('/make_vodka_cranberry', methods=['POST'])
-def make_vodka_cranberry_response():
-    make_vodka_cranberry()
-    return jsonify({"status": "Vodka Cranberry is ready!"})
-
-@app.route('/make_sea_breeze', methods=['POST'])
-def make_sea_breeze_response():
-    make_sea_breeze()
-    return jsonify({"status": "Sea Breeze is ready!"})
-
-@app.route('/make_vodka_tonic', methods=['POST'])
-def make_vodka_tonic_response():
-    make_vodka_tonic()
-    return jsonify({"status": "Vodka Tonic is ready!"})
-
-@app.route('/make_screwdriver', methods=['POST'])
-def make_screwdriver_response():
-    make_screwdriver()
-    return jsonify({"status": "Screwdriver is ready!"})
-
-@app.route('/make_cosmo', methods=['POST'])
-def make_cosmo_response():
-    make_cosmo()
-    return jsonify({"status": "Cosmopolitan is ready!"})
-
-@app.route('/make_lemon_drop', methods=['POST'])
-def make_lemon_drop_response():
-    make_lemon_drop()
-    return jsonify({"status": "Lemon Drop is ready!"})
-
-@app.route('/make_tequila_sunrise', methods=['POST'])
-def make_tequila_sunrise_response():
-    make_tequila_sunrise()
-    return jsonify({"status": "Tequila Sunrise is ready!"})
-
-@app.route('/make_shirley_temple', methods=['POST'])
-def make_shirley_temple_response():
-    make_shirley_temple()
-    return jsonify({"status": "Shirley Temple is ready!"})
-
-@app.route('/make_squirtini', methods=['POST'])
-def make_squirtini_response():
-    make_squirtini()
-    return jsonify({"status": "Squirtini is ready!"})
+"""
 
 """ START FLASK """
 # Start the Flask server
