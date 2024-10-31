@@ -3,19 +3,13 @@ import RPi.GPIO as GPIO  # Required for controlling GPIO pins
 import time  # Required to manage delays and wait times
 from flask import Flask, request, jsonify
 import os
-import openai
+from openai import OpenAI
 import threading
-
-""" THREADING """
-# Function to prepare the drink in the background
-def prepare_drink_in_background(drink_function):
-    thread = threading.Thread(target=drink_function)
-    thread.start()
 
 """ OPENAI SETUP """
 # Set up OpenAI API key
-client = openai(
-  api_key=os.environ['OPENAI_API_KEY'],
+client = OpenAI(
+    api_key=os.environ['OPENAI_API_KEY'],
 )
 
 # List of all drinks for GPT
@@ -28,27 +22,72 @@ drinks = [
 
 # Function for GPT to recommend a drink based on mood
 def get_drink_recommendation(mood):
+    """
+    Get a drink recommendation based on user's mood.
+    
+    Args:
+        mood (str): The user's current mood
+        
+    Returns:
+        str: Recommended drink name from the drinks list
+    """
+    if not isinstance(mood, str):
+        raise ValueError("Mood must be a string")
+        
+    if not mood.strip():
+        raise ValueError("Mood cannot be empty")
+        
     try:
+        if not client.api_key:
+            raise ValueError("OpenAI API key not found in environment variables")
+            
         prompt = (
             f"The user is feeling {mood}. Based on their mood, suggest one drink from this list:\n"
             f"{', '.join(drinks)}.\nChoose one drink name from the list that best suits their mood in the following format:\ndrink name"
         )
-        completion = openai.chat.completions.create(
+        
+        completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
                     "role": "user",
                     "content": prompt
-                },
+                }
             ],
-            max_tokens=20
+            max_tokens=20,
+            temperature=0.7  # Added for more consistent outputs
         )
-        suggested_drink = completion.choices[0].message.context
-        print(suggested_drink)
+        
+        suggested_drink = completion.choices[0].message.content.strip()
+        
+        # Validate that the suggested drink is in our list
+        if suggested_drink not in drinks:
+            print(f"Warning: GPT suggested '{suggested_drink}' which is not in our drinks list")
+            return "Margarita"  # Default fallback
+            
         return suggested_drink
+        
     except Exception as e:
         print(f"Error during OpenAI request: {e}")
-        return "Margarita"
+        return "Margarita"  # Default fallback
+    
+""" THREADING """
+""" Old threading function
+def prepare_drink_in_background(drink_function):
+    thread = threading.Thread(target=drink_function)
+    thread.start()
+"""
+
+def prepare_drink_in_background(drink_function):
+# Function to prepare the drink in the background
+    try:
+        thread = threading.Thread(target=drink_function)
+        thread.daemon = True  # Make thread daemon so it doesn't block program exit
+        thread.start()
+        return thread
+    except Exception as e:
+        print(f"Error starting drink preparation thread: {e}")
+        return None
 
 """ GPIO SETUP """
 GPIO.setmode(GPIO.BCM)  # Use BCM numbering
@@ -160,6 +199,78 @@ def ask_for_mood_response():
             "shouldEndSession": False
         }
     })
+
+def handle_mood_input(mood):
+    # Handle mood input and return appropriate drink recommendation response
+    try:
+        # Get drink recommendation from GPT
+        recommended_drink = get_drink_recommendation(mood)
+        
+        recommended_drink = str(recommended_drink).strip()
+        intent_name = recommended_drink + "Intent"
+        
+        if intent_name in drink_handlers:
+            def prepare_recommended():
+                try:
+                    drink_handlers[intent_name]()
+                except Exception as e:
+                    print(f"Error preparing {recommended_drink}: {e}")
+                    # Fallback to making a Margarita if drink preparation fails
+                    make_margarita()
+            
+            # Start drink preparation in background
+            thread = prepare_drink_in_background(prepare_recommended)
+            
+            if thread is None:  # If thread creation failed
+                make_margarita()
+                return jsonify({
+                    "version": "1.0",
+                    "response": {
+                        "outputSpeech": {
+                            "type": "PlainText",
+                            "text": "Thread creation has failed. I'll make you a Margarita instead!"
+                        },
+                        "shouldEndSession": True
+                    }
+                })
+            
+            return jsonify({
+                "version": "1.0",
+                "response": {
+                    "outputSpeech": {
+                        "type": "PlainText",
+                        "text": f"Based on your mood, I'll make you a {recommended_drink}."
+                    },
+                    "shouldEndSession": True
+                }
+            })
+        else:
+            # If we don't have a handler for the recommended drink
+            make_margarita()
+            return jsonify({
+                "version": "1.0",
+                "response": {
+                    "outputSpeech": {
+                        "type": "PlainText",
+                        "text": "No handler for recommended drink. I'll make a Margarita!"
+                    },
+                    "shouldEndSession": True
+                }
+            })
+            
+    except Exception as e:
+        print(f"Error in handle_mood_input: {e}")
+        make_margarita()
+        return jsonify({
+            "version": "1.0",
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "I encountered an unexpected error, but I'll make you a Margarita!"
+                },
+                "shouldEndSession": True
+            }
+        })
 
 # Input mood --> GPT recommends drink --> System makes the drink
 def handle_mood_input(mood):
@@ -370,6 +481,7 @@ drink_handlers = {
     "SquirtiniIntent": make_squirtini
 }
 
+""" FLASK """
 # Flask dynamic drink routing
 @app.route('/make_drink/<drink_name>', methods=['POST'])
 def make_drink(drink_name):
@@ -382,7 +494,6 @@ def make_drink(drink_name):
     else:
         return jsonify({"error": "Drink not found"}), 404
 
-""" START FLASK """
 # Start the Flask server
 if __name__ == '__main__':
     try:
