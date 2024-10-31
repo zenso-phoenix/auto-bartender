@@ -1,6 +1,18 @@
 import RPi.GPIO as GPIO  # Required for controlling GPIO pins
 import time  # Required to manage delays and wait times
 from flask import Flask, request, jsonify
+<<<<<<< Updated upstream
+=======
+import os
+import openai
+import threading
+
+""" THREADING """
+# Function to prepare the drink in the background
+def prepare_drink_in_background(drink_function):
+    thread = threading.Thread(target=drink_function)
+    thread.start()
+>>>>>>> Stashed changes
 
 # Setup GPIO mode and warnings
 GPIO.setmode(GPIO.BCM)  # Use BCM numbering (GPIO numbers)
@@ -59,6 +71,7 @@ def alexa_handler():
         return jsonify({
             "version": "1.0",
             "response": {
+<<<<<<< Updated upstream
                 "outputSpeech": {
                     "type": "PlainText",
                     "text": "Error"
@@ -67,17 +80,125 @@ def alexa_handler():
             }
         }), 500
             
+=======
+                "outputSpeech": {"type": "PlainText", "text": "Error"},
+                "shouldEndSession": True
+            }
+        }), 500
+
+# Default response when Alexa launches the skill
+>>>>>>> Stashed changes
 def launch_response():
     return jsonify({
         "version": "1.0",
         "response": {
             "outputSpeech": {
                 "type": "PlainText",
+<<<<<<< Updated upstream
                 "text": "Welcome! Ask me for drink!!!"
                 },
                 "shouldEndSession": False
             }
         })
+=======
+                "text": "What would you like to drink?"
+            },
+            "shouldEndSession": False
+        }
+    })
+
+# Response for unknown drinks
+def unknown_drink_response():
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Unknown drink."
+            },
+            "shouldEndSession": True
+        }
+    })
+
+""" BASIC FUNCTIONS """
+shot = 2.2  # Duration for a standard shot (1.5 oz per 2.2 seconds)
+
+# Function to dispense liquids
+def dispense(liquid_name, seconds):
+    if liquid_name in liquids:
+        try:
+            print(f"Dispensing {liquid_name} for {seconds} seconds.")
+            GPIO.output(liquids[liquid_name], GPIO.LOW)  # Turn on pump
+            time.sleep(seconds)  # Pump runs
+            GPIO.output(liquids[liquid_name], GPIO.HIGH)  # Turn off pump
+        except Exception as e:
+            print(f"Error dispensing {liquid_name}: {e}")
+    else:
+        print(f"Error: {liquid_name} not found.")
+
+""" MOOD FUNCTIONS """
+# If user says "idk," system asks for mood
+def ask_for_mood_response():
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "How are you feeling today? I'll make the perfect drink for your mood."
+            },
+            "shouldEndSession": False
+        }
+    })
+
+# Input mood --> GPT recommends drink --> System makes the drink
+def handle_mood_input(mood):
+    recommended_drink = get_drink_recommendation(mood)
+
+    if recommended_drink in drink_handlers:
+        drink_handlers[recommended_drink]()  # Call the recommended drink function
+        return jsonify({
+            "version": "1.0",
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": f"Based on your mood, I'll make you a {recommended_drink}."
+                },
+                "shouldEndSession": True
+            }
+        })
+    else:
+        make_margarita()  # Fallback to Margarita
+        return jsonify({
+            "version": "1.0",
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "I'm not sure what to make based on that mood, but I'll make a Margarita!"
+                },
+                "shouldEndSession": True
+            }
+        })
+
+""" DRINK FUNCTIONS """
+def make_margarita():
+    def prepare():
+        dispense("rum", shot)
+        dispense("lemonime", 5)
+        dispense("tonic", 2)
+        dispense("oj", 2)
+        print("Margarita preparation completed.")
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Margarita!"
+            },
+            "shouldEndSession": True
+        }
+    })
+>>>>>>> Stashed changes
 
 def unknown_drink_response():
     return jsonify({
