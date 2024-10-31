@@ -4,8 +4,7 @@ import threading
 
 """ OPENAI SETUP """
 # Set up OpenAI API key
-client = OpenAI(
-    api_key=
+client = OpenAI(api_key='')
 
 # List of all drinks for GPT
 drinks = [
@@ -14,6 +13,9 @@ drinks = [
     "SeaBreeze", "VodkaTonic", "Screwdriver", "Cosmopolitan", "LemonDrop",
     "TequilaSunrise", "ShirleyTemple", "Squirtini"
 ]
+
+drink_join = ', '.join(drinks)
+print(drink_join)
 
 def get_drink_recommendation(mood):
     """
@@ -36,8 +38,9 @@ def get_drink_recommendation(mood):
             raise ValueError("OpenAI API key not found in environment variables")
             
         prompt = (
-            f"The user is feeling {mood}. Based on their mood, suggest one drink from this list:\n"
-            f"{', '.join(drinks)}.\nChoose one drink name from the list that best suits their mood in the following format:\ndrink name"
+            f"The user is feeling {mood}. Based on their mood, suggest one drink from this list:\n\n"
+            f"{', '.join(drinks)}\n\n"
+            f"Instruction: Choose one drink name from the list that best suits their mood and respond only with the drink name, without adding any extra text or formatting."
         )
         
         completion = client.chat.completions.create(
