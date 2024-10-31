@@ -182,18 +182,28 @@ def make_margarita():
         dispense("lemonime", 5)
         dispense("tonic", 2)
         dispense("oj", 2)
+        return jsonify({
+            "version": "1.0",
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "Your Margarita is ready!"
+                },
+                "shouldEndSession": True
+            }
+        })
     except Exception as e:
         print(f"Error making Margarita: {e}")
-    return jsonify({
-        "version": "1.0",
-        "response": {
-            "outputSpeech": {
-                "type": "PlainText",
-                "text": "Your Margarita is ready!"
-            },
-            "shouldEndSession": True
-        }
-    })
+        return jsonify({
+            "version": "1.0",
+            "response": {
+                "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "Error"
+                },
+                "shouldEndSession": True
+            }
+        }), 202
 
 def make_sex_on_the_beach():
     try:
