@@ -1,7 +1,7 @@
 """ IMPORT LIBRARIES """
 import RPi.GPIO as GPIO  # Required for controlling GPIO pins
 import time  # Required to manage delays and wait times
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import os
 from openai import OpenAI
 import threading
@@ -107,6 +107,12 @@ print("GPIO setup complete.")
 
 """ FLASK APP FOR ALEXA """
 app = Flask(__name__)
+
+# Serve HTML for the UI
+@app.route('/ui')
+def ui():
+    # Pass the list of drinks to the template
+    return render_template('index.html', drinks=list(drink_handlers.keys()))
 
 # Route for handling Alexa requests
 @app.route('/', methods=['POST'])
@@ -482,15 +488,13 @@ drink_handlers = {
 }
 
 """ FLASK """
-# Flask dynamic drink routing
+# Route for ordering a drink from the UI (e.g. /make_drink/MargaritaIntent)
 @app.route('/make_drink/<drink_name>', methods=['POST'])
 def make_drink(drink_name):
-    # Make the drink name case-insensitive and replace underscores with spaces
-    drink_name = drink_name
-
     if drink_name in drink_handlers:
-        drink_handlers[drink_name]()  # Call the function
-        return jsonify({"status": f"{drink_name} is ready!"})
+        # Prepare the drink in the background
+        threading.Thread(target=drink_handlers[drink_name]).start()
+        return jsonify({"status": f"{drink_name} is being prepared!"}), 200
     else:
         return jsonify({"error": "Drink not found"}), 404
 

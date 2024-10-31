@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drink Ordering UI</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .drink-button { margin: 10px; padding: 15px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>Select a Drink</h1>
+    <div id="drink-list">
+        {% for drink in drinks %}
+            <button class="drink-button" onclick="makeDrink('{{ drink }}')">{{ drink.replace('Intent', '') }}</button>
+        {% endfor %}
+    </div>
+    <div id="status"></div>
+    <script>
+        function makeDrink(drinkName) {
+            fetch(`/make_drink/${drinkName}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("status").innerText = data.status || data.error;
+                })
+                .catch(error => {
+                    document.getElementById("status").innerText = "Error ordering drink.";
+                });
+        }
+    </script>
+</body>
+</html>
