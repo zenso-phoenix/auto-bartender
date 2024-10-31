@@ -1,4 +1,4 @@
-"""IMPORT LIBRARIES"""
+""" IMPORT LIBRARIES """
 import RPi.GPIO as GPIO  # Required for controlling GPIO pins
 import time  # Required to manage delays and wait times
 from flask import Flask, request, jsonify
@@ -11,32 +11,18 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # List of all drinks for GPT
 drinks = [
-    "Sex on the Beach",
-    "Gin and Tonic",
-    "Tom Collins",
-    "Gin Sunrise",
-    "Negroni",
-    "Margarita",
-    "Rum Punch",
-    "Daiquiri",
-    "Mojito",
-    "Vodka Cranberry",
-    "Sea Breeze",
-    "Vodka Tonic",
-    "Screwdriver",
-    "Cosmopolitan",
-    "Lemon Drop",
-    "Tequila Sunrise",
-    "Shirley Temple",
-    "Squirtini"
+    "Sex on the Beach", "Gin and Tonic", "Tom Collins", "Gin Sunrise", "Negroni",
+    "Margarita", "Rum Punch", "Daiquiri", "Mojito", "Vodka Cranberry",
+    "Sea Breeze", "Vodka Tonic", "Screwdriver", "Cosmopolitan", "Lemon Drop",
+    "Tequila Sunrise", "Shirley Temple", "Squirtini"
 ]
 
-# Inputs mood and (GPT) returns drink recommendation
+# Function for GPT to recommend a drink based on mood
 def get_drink_recommendation(mood):
     try:
         prompt = (
             f"The user is feeling {mood}. Based on their mood, suggest one drink from this list: "
-            f"{', '.join(drinks)}. Provide the name of the one drink that best suits their mood in the following format:\ndrink name"
+            f"{', '.join(drinks)}. Choose one drink name from the list that best suits their mood in the following format:\ndrink name"
         )
         response = openai.Completion.create(
             engine="gpt-3.5-turbo-instruct",
@@ -50,34 +36,25 @@ def get_drink_recommendation(mood):
         return "Margarita"
 
 """ GPIO SETUP """
-# Setup GPIO mode and warnings
-GPIO.setmode(GPIO.BCM)  # Use BCM numbering (GPIO numbers)
+GPIO.setmode(GPIO.BCM)  # Use BCM numbering
 GPIO.setwarnings(False)  # Disable warnings
 
-# Assign liquids and pumps
+# Assign GPIO pins for liquids
 liquids = {
-    "gin": 4,
-    "rum": 5, # Swap out for tequila for margaritas
-    "vodka": 6,
-    "oj": 7,  # Pineapple-orange action
-    "cran": 8,
-    "tonic": 9, # Can replace with sprite if ur fat
-    "grenadine": 10,  # Grenadine = (cran + grenadine) = pomegranate, right?
-    "lemonime": 11  # Lemon-lime mix for sinful bartending
+    "gin": 4, "rum": 5, "vodka": 6, "oj": 7, "cran": 8,
+    "tonic": 9, "grenadine": 10, "lemonime": 11
 }
 
-# Set each pump pin as OUTPUT
+# Initialize each pin as OUTPUT and set to HIGH (off state)
 for pin in liquids.values():
     GPIO.setup(pin, GPIO.OUT)
     GPIO.output(pin, GPIO.HIGH)
-
 print("GPIO setup complete.")
 
-""" ALEXA SETUP """
-# Flask app to listen for Alexa requests
+""" FLASK APP FOR ALEXA """
 app = Flask(__name__)
 
-# Alexa routing
+# Route for handling Alexa requests
 @app.route('/', methods=['POST'])
 def alexa_handler():
     try:
@@ -90,66 +67,30 @@ def alexa_handler():
         elif request_type == "IntentRequest":
             intent_name = alexa_request['request']['intent']['name']
             
-            # Mood intents
+            # Handle mood-based intent
             if intent_name == "ProvideMoodIntent":
                 user_mood = alexa_request['request']['intent']['slots']['mood']['value']
                 return handle_mood_input(user_mood)
             elif intent_name == "UnsureIntent":
                 return ask_for_mood_response()
             
-            # Drink intents
-            elif intent_name == "SexOnTheBeachIntent":
-                return make_sex_on_the_beach_response()
-            elif intent_name == "GinAndTonicIntent":
-                return make_gin_and_tonic_response()
-            elif intent_name == "TomCollinsIntent":
-                return make_tom_collins_response()
-            elif intent_name == "GinSunriseIntent":
-                return make_gin_sunrise_response()
-            elif intent_name == "NegroniIntent":
-                return make_negroni_response()
-            elif intent_name == "MargaritaIntent":
-                return make_margarita_response()
-            elif intent_name == "RumPunchIntent": # Rum Punch and Mai Tai utterances
-                return make_rum_punch_response()
-            elif intent_name == "DaquiriIntent":
-                return make_daiquiri_response()
-            elif intent_name == "MojitoIntent":
-                return make_mojito_response()
-            elif intent_name == "VodkaCranberryIntent": # Vodka Cranberry and Cape Codder utterances
-                return make_vodka_cranberry_response()
-            elif intent_name == "SeaBreezeIntent":
-                return make_sea_breeze_response()
-            elif intent_name == "VodkaTonicIntent":
-                return make_vodka_tonic_response()
-            elif intent_name == "ScrewdriverIntent":
-                return make_screwdriver_response()
-            elif intent_name == "CosmopolitanIntent": # Cosmopolitan and Cosmo utterances
-                return make_cosmo_response()
-            elif intent_name == "LemonDropIntent":
-                return make_lemon_drop_response()
-            elif intent_name == "TequilaSunriseIntent":
-                return make_tequila_sunrise_response()
-            elif intent_name == "ShirleyTempleIntent":
-                return make_shirley_temple_response()
-            elif intent_name == "SquirtiniIntent":
-                return make_squirtini_response()
-            else:
-                return unknown_drink_response()
+            # Handle drink-specific intents
+            if intent_name in drink_handlers:
+                return drink_handlers[intent_name]()
+            
+            return unknown_drink_response()  # Unknown intent fallback
             
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({
             "version": "1.0",
             "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": "Error"
-                },
+                "outputSpeech": {"type": "PlainText", "text": "Error"},
                 "shouldEndSession": True
             }
         }), 500
-            
+
+# Default response when Alexa launches the skill
 def launch_response():
     return jsonify({
         "version": "1.0",
@@ -157,11 +98,12 @@ def launch_response():
             "outputSpeech": {
                 "type": "PlainText",
                 "text": "What would you like to drink?"
-                },
-                "shouldEndSession": False
-            }
-        })
+            },
+            "shouldEndSession": False
+        }
+    })
 
+# Response for unknown drinks
 def unknown_drink_response():
     return jsonify({
         "version": "1.0",
@@ -169,149 +111,71 @@ def unknown_drink_response():
             "outputSpeech": {
                 "type": "PlainText",
                 "text": "Unknown drink."
-                },
-                "shouldEndSession": True
-            }
-        })
+            },
+            "shouldEndSession": True
+        }
+    })
 
-""" BASIC FUNCTIONS + VARIABLES """
-# Shot variable
-shot = 2.2 # 1.5 oz. every 2.2 sec according to math
+""" BASIC FUNCTIONS """
+shot = 2.2  # Duration for a standard shot (1.5 oz per 2.2 seconds)
 
 # Function to dispense liquids
 def dispense(liquid_name, seconds):
     if liquid_name in liquids:
         try:
             print(f"Dispensing {liquid_name} for {seconds} seconds.")
-            GPIO.output(liquids[liquid_name], GPIO.LOW)  # Turn on liquid pump
-            time.sleep(seconds)  # Pump flows for assigned seconds
-            GPIO.output(liquids[liquid_name], GPIO.HIGH)  # Turn off liquid pump
+            GPIO.output(liquids[liquid_name], GPIO.LOW)  # Turn on pump
+            time.sleep(seconds)  # Pump runs
+            GPIO.output(liquids[liquid_name], GPIO.HIGH)  # Turn off pump
         except Exception as e:
-            print(f"Error while dispensing {liquid_name}: {e}")
+            print(f"Error dispensing {liquid_name}: {e}")
     else:
         print(f"Error: {liquid_name} not found.")
 
 """ MOOD FUNCTIONS """
-# Alexa calls: if user says "idk", system asks for mood
+# If user says "idk," system asks for mood
 def ask_for_mood_response():
     return jsonify({
         "version": "1.0",
         "response": {
             "outputSpeech": {
                 "type": "PlainText",
-                "text": "How are you feeling today then? I'll make the perfect drink for your mood."
+                "text": "How are you feeling today? I'll make the perfect drink for your mood."
             },
             "shouldEndSession": False
         }
     })
 
-# Inputs mood -> recommended drink --> runs make drink function
+# Input mood --> GPT recommends drink --> System makes the drink
 def handle_mood_input(mood):
     recommended_drink = get_drink_recommendation(mood)
 
-    if recommended_drink in drinks:
-        # Trigger the drink-making function based on the recommendation
-        if recommended_drink == "Margarita":
-            make_margarita()
-        elif recommended_drink == "Sex on the Beach":
-            make_sex_on_the_beach()
-        elif recommended_drink == "Gin and Tonic":
-            make_gin_and_tonic()
-        elif recommended_drink == "Tom Collins":
-            make_tom_collins()
-        elif recommended_drink == "Gin Sunrise":
-            make_gin_sunrise()
-        elif recommended_drink == "Negroni":
-            make_negroni()
-        elif recommended_drink == "Rum Punch or Mai Tai":
-            make_rum_punch()
-        elif recommended_drink == "Daiquiri":
-            make_daiquiri()
-        elif recommended_drink == "Mojito":
-            make_mojito()
-        elif recommended_drink == "Vodka Cranberry or Cape Codder":
-            make_vodka_cranberry()
-        elif recommended_drink == "Sea Breeze":
-            make_sea_breeze()
-        elif recommended_drink == "Vodka Tonic":
-            make_vodka_tonic()
-        elif recommended_drink == "Screwdriver":
-            make_screwdriver()
-        elif recommended_drink == "Cosmopolitan or Cosmo":
-            make_cosmo()
-        elif recommended_drink == "Lemon Drop":
-            make_lemon_drop()
-        elif recommended_drink == "Tequila Sunrise":
-            make_tequila_sunrise()
-        elif recommended_drink == "Shirley Temple":
-            make_shirley_temple()
-        elif recommended_drink == "Squirtini":
-            make_squirtini()
-        else:
-            # Fallback if drink not found, but technically it always should be
-            make_margarita()
-            recommended_drink = "Margarita"
+    if recommended_drink in drink_handlers:
+        drink_handlers[recommended_drink]()  # Call the recommended drink function
         return jsonify({
             "version": "1.0",
             "response": {
                 "outputSpeech": {
                     "type": "PlainText",
-                    "text": f"Based on how you're feeling, I'll make a {recommended_drink}."
+                    "text": f"Based on your mood, I'll make you a {recommended_drink}."
                 },
                 "shouldEndSession": True
             }
         })
     else:
-        # Fallback if no drink is found
-        make_margarita()
+        make_margarita()  # Fallback to Margarita
         return jsonify({
             "version": "1.0",
             "response": {
                 "outputSpeech": {
                     "type": "PlainText",
-                    "text": "I'm not sure what to make based on that mood, but how about a Margarita instead?"
+                    "text": "I'm not sure what to make based on that mood, but I'll make a Margarita!"
                 },
                 "shouldEndSession": True
             }
         })
 
-""" MARGARITA """"
-# Flask route handler
-@app.route('/make_margarita', methods=['POST'])
-def make_margarita_route():
-    make_margarita()
-    return jsonify({"status": "Margarita is ready!"})
-
-# Alexa intent function
-def make_margarita_response():
-    try:
-        make_margarita()
-        return jsonify({
-            "version": "1.0",
-            "sessionAttributes": {},
-            "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": "Your Margarita is ready!"
-                },
-                "shouldEndSession": True
-            }
-        })
-    except Exception as e:
-        print(f"Error in making Margarita: {e}")
-        return jsonify({
-            "version": "1.0",
-            "sessionAttributes": {},
-            "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": "Sorry, I couldn't make a Margarita."
-                },
-                "shouldEndSession": True
-            }
-        })
-
-# Shared Margarita making function
+""" DRINK FUNCTIONS """
 def make_margarita():
     try:
         dispense("rum", shot)
@@ -320,8 +184,6 @@ def make_margarita():
         dispense("oj", 2)
     except Exception as e:
         print(f"Error making Margarita: {e}")
-
-""" Un-updated drink functions
 
 def make_sex_on_the_beach():
     try:
@@ -421,6 +283,7 @@ def make_screwdriver():
 def make_cosmo():
     try:
         dispense("vodka", shot)
+        dispense("oj", 1)
         dispense("cran", 4)
         dispense("lemonime", 3)
         dispense("grenadine", 1)  # Adds sweetness and a touch of color
@@ -456,7 +319,41 @@ def make_squirtini():
             dispense(liquid, 1)  # Dispense each for 1 second
     except Exception as e:
         print(f"Error making Squirtini: {e}")
-"""
+
+""" ROUTE HANDLERS FOR DRINK FUNCTIONS """
+# Map drink names and intents to their corresponding functions
+drink_handlers = {
+    "Margarita": make_margarita,
+    "Sex on the Beach": make_sex_on_the_beach,
+    "Gin and Tonic": make_gin_and_tonic,
+    "Tom Collins": make_tom_collins,
+    "Gin Sunrise": make_gin_sunrise,
+    "Negroni": make_negroni,
+    "Rum Punch": make_rum_punch,
+    "Daiquiri": make_daiquiri,
+    "Mojito": make_mojito,
+    "Vodka Cranberry": make_vodka_cranberry,
+    "Sea Breeze": make_sea_breeze,
+    "Vodka Tonic": make_vodka_tonic,
+    "Screwdriver": make_screwdriver,
+    "Cosmopolitan": make_cosmo,
+    "Lemon Drop": make_lemon_drop,
+    "Tequila Sunrise": make_tequila_sunrise,
+    "Shirley Temple": make_shirley_temple,
+    "Squirtini": make_squirtini
+}
+
+# Flask dynamic drink routing
+@app.route('/make_drink/<drink_name>', methods=['POST'])
+def make_drink(drink_name):
+    # Make the drink name case-insensitive and replace underscores with spaces
+    drink_name = drink_name.replace('_', ' ').title()
+
+    if drink_name in drink_handlers:
+        drink_handlers[drink_name]()  # Call the function
+        return jsonify({"status": f"{drink_name} is ready!"})
+    else:
+        return jsonify({"error": "Drink not found"}), 404
 
 """ START FLASK """
 # Start the Flask server
