@@ -176,34 +176,17 @@ def handle_mood_input(mood):
         })
 
 """ DRINK FUNCTIONS """
-def make_margarita():
+# Margarita
+@app.route('/make_margarita', methods=['POST'])
+def make_margarita_response():
     try:
         dispense("rum", shot)
         dispense("lemonime", 5)
         dispense("tonic", 2)
         dispense("oj", 2)
-        return jsonify({
-            "version": "1.0",
-            "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": "Your Margarita is ready!"
-                },
-                "shouldEndSession": True
-            }
-        })
+        return jsonify({"status": "Margarita is ready!"})
     except Exception as e:
-        print(f"Error making Margarita: {e}")
-        return jsonify({
-            "version": "1.0",
-            "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": "Error"
-                },
-                "shouldEndSession": True
-            }
-        }), 202
+        return jsonify({"error": str(e)}), 500  # Return 500 error if something goes wrong
 
 def make_sex_on_the_beach():
     try:
@@ -362,7 +345,7 @@ drink_handlers = {
     "ShirleyTempleIntent": make_shirley_temple,
     "SquirtiniIntent": make_squirtini
 }
-
+"""
 # Flask dynamic drink routing
 @app.route('/make_drink/<drink_name>', methods=['POST'])
 def make_drink(drink_name):
@@ -374,6 +357,7 @@ def make_drink(drink_name):
         return jsonify({"status": f"{drink_name} is ready!"})
     else:
         return jsonify({"error": "Drink not found"}), 404
+        """
 
 """ START FLASK """
 # Start the Flask server
