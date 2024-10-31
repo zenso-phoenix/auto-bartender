@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO  # Required for controlling GPIO pins
 import time  # Required to manage delays and wait times
 from flask import Flask, request, jsonify
 import os
-import openai
+from openai import OpenAI
 import threading
 
 """ THREADING """
@@ -14,14 +14,16 @@ def prepare_drink_in_background(drink_function):
 
 """ OPENAI SETUP """
 # Set up OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(
+  api_key=os.environ['OPENAI_API_KEY'],
+)
 
 # List of all drinks for GPT
 drinks = [
-    "Sex on the Beach", "Gin and Tonic", "Tom Collins", "Gin Sunrise", "Negroni",
-    "Margarita", "Rum Punch", "Daiquiri", "Mojito", "Vodka Cranberry",
-    "Sea Breeze", "Vodka Tonic", "Screwdriver", "Cosmopolitan", "Lemon Drop",
-    "Tequila Sunrise", "Shirley Temple", "Squirtini"
+    "SexOnTheBeach", "GinAndTonic", "TomCollins", "GinSunrise", "Negroni",
+    "Margarita", "RumPunch", "Daiquiri", "Mojito", "VodkaCranberry",
+    "SeaBreeze", "VodkaTonic", "Screwdriver", "Cosmopolitan", "LemonDrop",
+    "TequilaSunrise", "ShirleyTemple", "Squirtini"
 ]
 
 # Function for GPT to recommend a drink based on mood
@@ -31,12 +33,13 @@ def get_drink_recommendation(mood):
             f"The user is feeling {mood}. Based on their mood, suggest one drink from this list: "
             f"{', '.join(drinks)}. Choose one drink name from the list that best suits their mood in the following format:\ndrink name"
         )
-        response = openai.Completion.create(
-            engine="gpt-3.5-turbo-instruct",
-            prompt=prompt,
+        response = openai.completions.create(
+            model="gpt-3.5-turbo-instruct",
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=20
         )
         suggested_drink = response.choices[0].text.strip()
+        print(suggested_drink)
         return suggested_drink
     except Exception as e:
         print(f"Error during OpenAI request: {e}")
@@ -157,8 +160,10 @@ def ask_for_mood_response():
 def handle_mood_input(mood):
     recommended_drink = get_drink_recommendation(mood)
 
-    if recommended_drink in drink_handlers:
-        drink_handlers[recommended_drink]()  # Call the recommended drink function
+    if str(recommended_drink) + "Intent" in drink_handlers:
+        def prepare():
+            drink_handlers[str(recommended_drink) + "Intent"]()  # Call the recommended drink function
+        prepare_drink_in_background(prepare)
         return jsonify({
             "version": "1.0",
             "response": {
