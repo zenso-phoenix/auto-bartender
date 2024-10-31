@@ -184,6 +184,16 @@ def make_margarita():
         dispense("oj", 2)
     except Exception as e:
         print(f"Error making Margarita: {e}")
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Your Margarita is ready!"
+            },
+            "shouldEndSession": True
+        }
+    })
 
 def make_sex_on_the_beach():
     try:
@@ -323,31 +333,31 @@ def make_squirtini():
 """ ROUTE HANDLERS FOR DRINK FUNCTIONS """
 # Map drink names and intents to their corresponding functions
 drink_handlers = {
-    "Margarita": make_margarita,
-    "Sex on the Beach": make_sex_on_the_beach,
-    "Gin and Tonic": make_gin_and_tonic,
-    "Tom Collins": make_tom_collins,
-    "Gin Sunrise": make_gin_sunrise,
-    "Negroni": make_negroni,
-    "Rum Punch": make_rum_punch,
-    "Daiquiri": make_daiquiri,
-    "Mojito": make_mojito,
-    "Vodka Cranberry": make_vodka_cranberry,
-    "Sea Breeze": make_sea_breeze,
-    "Vodka Tonic": make_vodka_tonic,
-    "Screwdriver": make_screwdriver,
-    "Cosmopolitan": make_cosmo,
-    "Lemon Drop": make_lemon_drop,
-    "Tequila Sunrise": make_tequila_sunrise,
-    "Shirley Temple": make_shirley_temple,
-    "Squirtini": make_squirtini
+    "MargaritaIntent": make_margarita,
+    "SexOnTheBeachIntent": make_sex_on_the_beach,
+    "GinAndTonicIntent": make_gin_and_tonic,
+    "TomCollinsIntent": make_tom_collins,
+    "GinSunriseIntent": make_gin_sunrise,
+    "NegroniIntent": make_negroni,
+    "RumPunchIntent": make_rum_punch,
+    "DaiquiriIntent": make_daiquiri,
+    "MojitoIntent": make_mojito,
+    "VodkaCranberryIntent": make_vodka_cranberry,
+    "SeaBreezeIntent": make_sea_breeze,
+    "VodkaTonicIntent": make_vodka_tonic,
+    "ScrewdriverIntent": make_screwdriver,
+    "CosmopolitanIntent": make_cosmo,
+    "LemonDropIntent": make_lemon_drop,
+    "TequilaSunriseIntent": make_tequila_sunrise,
+    "ShirleyTempleIntent": make_shirley_temple,
+    "SquirtiniIntent": make_squirtini
 }
 
 # Flask dynamic drink routing
 @app.route('/make_drink/<drink_name>', methods=['POST'])
 def make_drink(drink_name):
     # Make the drink name case-insensitive and replace underscores with spaces
-    drink_name = drink_name.replace('_', ' ').title()
+    drink_name = drink_name
 
     if drink_name in drink_handlers:
         drink_handlers[drink_name]()  # Call the function
