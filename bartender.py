@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO  # Required for controlling GPIO pins
 import time  # Required to manage delays and wait times
 from flask import Flask, request, jsonify
 import os
-from openai import OpenAI
+import openai
 import threading
 
 """ THREADING """
@@ -14,7 +14,7 @@ def prepare_drink_in_background(drink_function):
 
 """ OPENAI SETUP """
 # Set up OpenAI API key
-client = OpenAI(
+client = openai(
   api_key=os.environ['OPENAI_API_KEY'],
 )
 
@@ -30,15 +30,20 @@ drinks = [
 def get_drink_recommendation(mood):
     try:
         prompt = (
-            f"The user is feeling {mood}. Based on their mood, suggest one drink from this list: "
-            f"{', '.join(drinks)}. Choose one drink name from the list that best suits their mood in the following format:\ndrink name"
+            f"The user is feeling {mood}. Based on their mood, suggest one drink from this list:\n"
+            f"{', '.join(drinks)}.\nChoose one drink name from the list that best suits their mood in the following format:\ndrink name"
         )
-        response = openai.completions.create(
-            model="gpt-3.5-turbo-instruct",
-            messages=[{"role": "user", "content": prompt}],
+        completion = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                },
+            ],
             max_tokens=20
         )
-        suggested_drink = response.choices[0].text.strip()
+        suggested_drink = completion.choices[0].message.context
         print(suggested_drink)
         return suggested_drink
     except Exception as e:
@@ -161,9 +166,9 @@ def handle_mood_input(mood):
     recommended_drink = get_drink_recommendation(mood)
 
     if str(recommended_drink) + "Intent" in drink_handlers:
-        def prepare():
+        def prepare_recommended():
             drink_handlers[str(recommended_drink) + "Intent"]()  # Call the recommended drink function
-        prepare_drink_in_background(prepare)
+        prepare_drink_in_background(prepare_recommended)
         return jsonify({
             "version": "1.0",
             "response": {
