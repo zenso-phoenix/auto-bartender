@@ -331,139 +331,309 @@ def make_margarita():
     })
 
 def make_sex_on_the_beach():
-    try:
+    def prepare():
         dispense("vodka", 3)
         dispense("rum", 3)
         dispense("gin", 3)
         dispense("oj", 10)
         dispense("cran", 5)
-    except Exception as e:
-        print(f"Error making Sex on the Beach: {e}")
+        print("Sex on the Beach preparation completed.")
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Sex on the Beach!"
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_gin_and_tonic():
-    try:
+def make_gin_and_tonic(): 
+    def prepare():
         dispense("gin", shot)
         dispense("tonic", 6)
-    except Exception as e:
-        print(f"Error making Gin and Tonic: {e}")
+        print("Gin and Tonic preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Gin and Tonic!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_tom_collins():
-    try:
+def make_tom_collins(): 
+    def prepare():
         dispense("gin", shot)
         dispense("lemonime", 5)
         dispense("tonic", 4)
-    except Exception as e:
-        print(f"Error making Tom Collins: {e}")
+        print("Tom Collins preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Tom Collins!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_gin_sunrise():
-    try:
+def make_gin_sunrise(): 
+    def prepare():
         dispense("gin", shot)
         dispense("oj", 6)
         dispense("grenadine", 2)
-    except Exception as e:
-        print(f"Error making Gin Sunrise: {e}")
+        print("Gin Sunrise preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Gin Sunrise!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_negroni():
-    try:
+def make_negroni(): 
+    def prepare():
         dispense("gin", shot)
         dispense("rum", shot)
         dispense("tonic", 3)
-    except Exception as e:
-        print(f"Error making Negroni: {e}")
+        print("Negroni preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Negroni!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_rum_punch():
-    try:
+def make_rum_punch(): 
+    def prepare():
         dispense("rum", 3)
         dispense("oj", 5)
         dispense("cran", 3)
         dispense("grenadine", 2)
-    except Exception as e:
-        print(f"Error making Rum Punch: {e}")
+        print("Rum Punch preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Rum Punch!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_daiquiri():
-    try:
+def make_daiquiri(): 
+    def prepare():
         dispense("rum", shot)
         dispense("lemonime", 5)
-        dispense("tonic", 2)  # A splash of tonic to mimic club soda
-    except Exception as e:
-        print(f"Error making Daiquiri: {e}")
+        dispense("tonic", 2)
+        print("Daiquiri preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Daiquiri!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_mojito():
-    try:
+def make_mojito(): 
+    def prepare():
         dispense("rum", shot)
         dispense("lemonime", 5)
-        dispense("tonic", 5)  # Tonic acts as a fizzy element like soda water
-    except Exception as e:
-        print(f"Error making Mojito: {e}")
+        dispense("tonic", 5)
+        print("Mojito preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Mojito!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_vodka_cranberry():
-    try:
+def make_vodka_cranberry(): 
+    def prepare():
         dispense("vodka", shot)
         dispense("cran", 5)
-    except Exception as e:
-        print(f"Error making Vodka Cranberry: {e}")
+        print("Vodka Cranberry preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Vodka Cranberry!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_sea_breeze():
-    try:
+def make_sea_breeze(): 
+    def prepare():
         dispense("vodka", shot)
         dispense("cran", 4)
         dispense("oj", 4)
-    except Exception as e:
-        print(f"Error making Sea Breeze: {e}")
+        print("Sea Breeze preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Sea Breeze!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_vodka_tonic():
-    try:
+def make_vodka_tonic(): 
+    def prepare():
         dispense("vodka", shot)
         dispense("tonic", 6)
-    except Exception as e:
-        print(f"Error making Vodka Tonic: {e}")
+        print("Vodka Tonic preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Vodka Tonic!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_screwdriver():
-    try:
+def make_screwdriver(): 
+    def prepare():
         dispense("vodka", shot)
         dispense("oj", 6)
-    except Exception as e:
-        print(f"Error making Screwdriver: {e}")
+        print("Screwdriver preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Screwdriver!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_cosmo():
-    try:
+def make_cosmo(): 
+    def prepare():
         dispense("vodka", shot)
         dispense("oj", 1)
         dispense("cran", 4)
         dispense("lemonime", 3)
-        dispense("grenadine", 1)  # Adds sweetness and a touch of color
-    except Exception as e:
-        print(f"Error making Cosmopolitan: {e}")
+        dispense("grenadine", 1)
+        print("Cosmopolitan preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Cosmopolitan!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_lemon_drop():
-    try:
+def make_lemon_drop(): 
+    def prepare():
         dispense("vodka", shot)
         dispense("lemonime", 5)
-        dispense("tonic", 2)  # Adds a bit of fizz, similar to soda water
-    except Exception as e:
-        print(f"Error making Lemon Drop: {e}")
+        dispense("tonic", 2)
+        print("Lemon Drop preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Lemon Drop!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_tequila_sunrise():
-    try:
+def make_tequila_sunrise(): 
+    def prepare():
         dispense("rum", shot)
         dispense("oj", 6)
         dispense("grenadine", 2)
-    except Exception as e:
-        print(f"Error making Tequila Sunrise: {e}")
+        print("Tequila Sunrise preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Tequila Sunrise!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_shirley_temple():
-    try:
+def make_shirley_temple(): 
+    def prepare():
         dispense("tonic", 6)
         dispense("grenadine", 2)
-    except Exception as e:
-        print(f"Error making Shirley Temple: {e}")
+        print("Shirley Temple preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Shirley Temple!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
-def make_squirtini():
-    try:
+def make_squirtini(): 
+    def prepare():
         for liquid in liquids.keys():
             dispense(liquid, 1)  # Dispense each for 1 second
-    except Exception as e:
-        print(f"Error making Squirtini: {e}")
+        print("Squirtini preparation completed.") 
+    prepare_drink_in_background(prepare)
+    return jsonify({
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": "Preparing your Squirtini!" 
+            },
+            "shouldEndSession": True
+        }
+    })
 
 """ ROUTE HANDLERS FOR DRINK FUNCTIONS """
 # Map drink names and intents to their corresponding functions
