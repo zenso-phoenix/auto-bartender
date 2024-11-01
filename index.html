@@ -6,18 +6,19 @@
     <title>Drink Ordering UI</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
-        .drink-button { margin: 10px; padding: 15px; font-size: 18px; }
+        .drink-button { margin: 10px; padding: 15px; font-size: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
     <h1>Select a Drink</h1>
     <div id="drink-list">
         {% for drink in drinks %}
-            <button class="drink-button" onclick="makeDrink('{{ drink }}')">{{ drink.replace('Intent', '') }}</button>
+            <button class="drink-button" data-drink="{{ drink }}">{{ drink.replace('Intent', '') }}</button>
         {% endfor %}
     </div>
     <div id="status"></div>
     <script>
+        // Function to handle the drink order
         function makeDrink(drinkName) {
             fetch(`/make_drink/${drinkName}`, { method: 'POST' })
                 .then(response => response.json())
@@ -28,6 +29,24 @@
                     document.getElementById("status").innerText = "Error ordering drink.";
                 });
         }
+
+        // Add event listeners for both click and touchstart on each button
+        document.addEventListener("DOMContentLoaded", function() {
+            const buttons = document.querySelectorAll(".drink-button");
+            
+            buttons.forEach(button => {
+                const drinkName = button.getAttribute("data-drink");
+                
+                // Attach both 'click' and 'touchstart' events
+                const eventHandler = () => makeDrink(drinkName);
+                
+                button.addEventListener("click", eventHandler);
+                button.addEventListener("touchstart", function(event) {
+                    event.preventDefault(); // Prevent default to avoid double-triggering
+                    eventHandler();
+                });
+            });
+        });
     </script>
 </body>
 </html>
